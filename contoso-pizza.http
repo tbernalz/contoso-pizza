@@ -24,3 +24,14 @@ Content-Type: application/json
 }
 
 ###
+
+PUT {{ContosoPizza_HostAddress}}/pizza/3
+Content-Type: application/json
+
+{
+    "id": 3,
+    "name": "Hawaiian",
+    "isAvailable": false
+}
+
+###
