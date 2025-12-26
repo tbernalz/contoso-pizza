@@ -35,3 +35,7 @@ Content-Type: application/json
 }
 
 ###
+
+DELETE {{ContosoPizza_HostAddress}}/pizza/2
+
+###
