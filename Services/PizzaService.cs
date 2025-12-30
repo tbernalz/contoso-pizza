@@ -1,56 +1,46 @@
+using ContosoPizza.Data;
 using ContosoPizza.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace ContosoPizza.Services;
 
 public class PizzaService
 {
-    List<Pizza> Pizzas { get; }
-    int nextId = 3;
+    private readonly PizzaDbContext _db;
 
-    public PizzaService()
+    public PizzaService(PizzaDbContext db)
     {
-        Pizzas = new List<Pizza>
-        {
-            new Pizza
-            {
-                Id = 1,
-                Name = "Margherita",
-                IsAvailable = true,
-            },
-            new Pizza
-            {
-                Id = 2,
-                Name = "Pepperoni",
-                IsAvailable = true,
-            },
-        };
+        _db = db;
     }
 
-    public List<Pizza> GetAll() => Pizzas;
+    public async Task<List<Pizza>> GetAllAsync() => await _db.Pizzas.AsNoTracking().ToListAsync();
 
-    public Pizza? Get(int id) => Pizzas.FirstOrDefault(p => p.Id == id);
+    public async Task<Pizza?> GetAsync(int id) => await _db.Pizzas.FindAsync(id);
 
-    public void Add(Pizza pizza)
+    public async Task<Pizza> AddAsync(Pizza pizza)
     {
-        pizza.Id = nextId++;
-        Pizzas.Add(pizza);
+        _db.Pizzas.Add(pizza);
+        await _db.SaveChangesAsync();
+        return pizza;
     }
 
-    public void Delete(int id)
+    public async Task<bool> DeleteAsync(int id)
     {
-        var pizza = Get(id);
+        var pizza = await GetAsync(id);
         if (pizza is null)
-            return;
-
-        Pizzas.Remove(pizza);
+            return false;
+        _db.Pizzas.Remove(pizza);
+        await _db.SaveChangesAsync();
+        return true;
     }
 
-    public void Update(Pizza pizza)
+    public async Task<bool> UpdateAsync(Pizza pizza)
     {
-        var index = Pizzas.FindIndex(p => p.Id == pizza.Id);
-        if (index == -1)
-            return;
-
-        Pizzas[index] = pizza;
+        var exists = await _db.Pizzas.AnyAsync(p => p.Id == pizza.Id);
+        if (!exists)
+            return false;
+        _db.Pizzas.Update(pizza);
+        await _db.SaveChangesAsync();
+        return true;
     }
 }
