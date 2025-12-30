@@ -1,4 +1,6 @@
+using ContosoPizza.Data;
 using ContosoPizza.Services;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,7 +11,11 @@ builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
-builder.Services.AddSingleton<PizzaService>();
+builder.Services.AddDbContext<PizzaDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("SqlServer"))
+);
+
+builder.Services.AddScoped<PizzaService>();
 
 var app = builder.Build();
 
