@@ -15,6 +15,8 @@ builder.Services.AddDbContext<PizzaDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("SqlServer"))
 );
 
+builder.Services.AddHealthChecks().AddDbContextCheck<PizzaDbContext>("Database");
+
 builder.Services.AddScoped<PizzaService>();
 
 var app = builder.Build();
@@ -28,6 +30,8 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
+
+app.MapHealthChecks("/health");
 
 app.MapControllers();
 
