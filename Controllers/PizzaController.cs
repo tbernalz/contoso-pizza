@@ -6,15 +6,22 @@ namespace ContosoPizza.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class PizzaController(PizzaService pizzaService) : ControllerBase
+public class PizzaController : ControllerBase
 {
+    private readonly PizzaService _pizzaService;
+
+    public PizzaController(PizzaService pizzaService)
+    {
+        _pizzaService = pizzaService;
+    }
+
     [HttpGet]
-    public ActionResult<List<Pizza>> GetAll() => pizzaService.GetAll();
+    public async Task<ActionResult<List<Pizza>>> GetAll() => await _pizzaService.GetAllAsync();
 
     [HttpGet("{id}")]
-    public ActionResult<Pizza> Get(int id)
+    public async Task<ActionResult<Pizza>> Get(int id)
     {
-        var pizza = pizzaService.Get(id);
+        var pizza = await _pizzaService.GetAsync(id);
 
         if (pizza is null)
             return NotFound();
@@ -23,33 +30,29 @@ public class PizzaController(PizzaService pizzaService) : ControllerBase
     }
 
     [HttpPost]
-    public IActionResult Create(Pizza pizza)
+    public async Task<IActionResult> Create(Pizza pizza)
     {
-        pizzaService.Add(pizza);
-        return CreatedAtAction(nameof(Get), new { id = pizza.Id }, pizza);
+        var created = await _pizzaService.AddAsync(pizza);
+        return CreatedAtAction(nameof(Get), new { id = created.Id }, created);
     }
 
     [HttpPut("{id}")]
-    public IActionResult Update(int id, Pizza pizza)
+    public async Task<IActionResult> Update(int id, Pizza pizza)
     {
         if (id != pizza.Id)
             return BadRequest();
 
-        if (pizzaService.Get(id) is null)
+        if (!await _pizzaService.UpdateAsync(pizza))
             return NotFound();
-
-        pizzaService.Update(pizza);
 
         return NoContent();
     }
 
     [HttpDelete("{id}")]
-    public IActionResult Delete(int id)
+    public async Task<IActionResult> Delete(int id)
     {
-        if (pizzaService.Get(id) is null)
+        if (!await _pizzaService.DeleteAsync(id))
             return NotFound();
-
-        pizzaService.Delete(id);
 
         return NoContent();
     }
